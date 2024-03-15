@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Streamlit",
+            "type": "python",
+            "request": "launch",
+            "program": "C://Users//VIP//miniforge3//envs//myenv//Scripts//streamlit.exe",
+            "console": "integratedTerminal",
+            "args": ["run","powerlift_dashboard.py"],
+            "justMyCode": true
+        }
+    ]
+}
