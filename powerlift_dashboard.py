@@ -99,7 +99,7 @@ ax.set_title('장비별 평균 성적')
 ax.set_ylabel('무게(kg)')
 st.pyplot(fig)
 
-# 성별 및 체급별 Wilks 점수 평균 분포
+## 성별 및 체급별 Wilks 점수 평균 분포
 st.subheader('성별 및 체급별 Wilks 점수 평균 분포')
 # 체급별 Wilks 점수 평균 계산 및 정렬
 gender_weight_class_group = data_1.groupby(['Sex', 'WeightClassKg'])['Wilks'].mean().reset_index()
@@ -127,7 +127,7 @@ plt.xticks(rotation=45)
 st.pyplot(fig)
 
 
-# Wilks 점수에 따른 성능 비교
+## Wilks 점수에 따른 성능 비교
 st.subheader('Wilks 점수에 따른 성능 비교')
 # 성별 선택
 user_gender = st.selectbox('성별을 선택하세요.', options=['M', 'F'], format_func=lambda x: '남성' if x == 'M' else '여성', key='gender_wilks_select')
@@ -202,11 +202,13 @@ try:
 except Exception as e:
     st.error(f"데이터 로드 중 오류가 발생했습니다: {e}")
 
-# 사용자 데이터 제공 동의 및 데이터 입력 섹션
+## 사용자 데이터 제공 동의 및 데이터 입력 섹션
 st.subheader('개인 데이터 제공 동의')
 st.write('데이터 채집을 동의하시면 목표 체급까지의 식단 정보를 제공받을 수 있습니다.')
+st.write('다른 사용자들에게 더 큰 도움을 주기 위해서 데이터 채집을 동의해주세요.')
+st.write('채집된 데이터는 차후에 사용자 데이터을 통한 분석에 반영될 예정입니다.')
 
-# '본인의 데이터 채집 동의하기' 버튼
+## 본인의 데이터 채집 동의하기 버튼
 if st.button('본인의 데이터 채집 동의하기'):
     consent = True
 else:
@@ -243,7 +245,6 @@ if consent:
 
             # 데이터 추가
             updated_data = pd.concat([data_2, new_data], ignore_index=True)
-            print(updated_data, new_data)
 
             # 데이터를 CSV 파일로 저장
             updated_data.to_csv(data_path_2, index=False)
