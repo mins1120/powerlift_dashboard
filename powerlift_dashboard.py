@@ -5,10 +5,6 @@ import seaborn as sns
 import platform
 import os
 
-# 평균을 계산하는 함수
-def calculate_averages(data, columns):
-    return data[columns].mean()
-
 ## 운영 체제별 폰트 설정
 system_name = platform.system()
 if system_name == 'Windows':
@@ -17,6 +13,68 @@ elif system_name == 'Darwin':
     plt.rc('font', family='AppleGothic')
 elif system_name == 'Linux':
     plt.rc('font', family='NanumGothic')
+
+
+## 평균을 계산하는 함수
+def calculate_averages(data, columns):
+    return data[columns].mean()
+
+## 기초 대사량 계산기 함수
+def bmr_calculator():
+    st.subheader('기초대사량 계산기')
+    st.write('헤레딕트 방정식 기준')
+    # 사용자 입력 받기
+    bmr_gender = st.radio("성별을 선택하세요.", ('남성', '여성'))
+    bmr_age = st.number_input("나이를 입력하세요.", min_value=12, max_value=120, value=30)
+    bmr_height = st.number_input("키(cm)를 입력하세요.", value=170)
+    bmr_weight = st.number_input("몸무게(kg)를 입력하세요.", value=70)
+    activity = st.selectbox("활동량을 입력하세요.", list(activity_levels.keys()))
+    goal = st.selectbox("목표를 선택하세요", ('약간의 다이어트(주 0.25kg감량)', '보통의 다이어트(주 0.5kg감량)', '심한 다이어트(주 1kg감량)', '벌크업', '유지'))
+
+    # Harris-Benedict 공식에 따른 기초 대사량 계산
+    if bmr_gender == '남성':
+        bmr = 88.362 + (13.397 * bmr_weight) + (4.799 * bmr_height) - (5.677 * bmr_age)
+    else:
+        bmr = 447.593 + (9.247 * bmr_weight) + (3.098 * bmr_height) - (4.330 * bmr_age)
+
+    # 기초 대사량 출력
+    st.write(f"기초 대사량(BMR): {bmr:.2f} kcal/일")
+
+    # 활동 수준에 따른 총 에너지 소모량(TDEE) 계산
+    activity_levels = {
+        "거의 활동 없음(좌식 생활 및 운동 X)": 1.2,
+        "가벼운 활동(활동량 보통 및 운동 1~3회)": 1.375,
+        "보통 활동(활동량 보통 및 운동 주 3~5회)": 1.55,
+        "활발한 활동(활동량 많거나 운동 주 6~7회)": 1.725,
+        "매우 활발한 활동(활동량 매우 많거나 운동 매일 2회)": 1.9
+    }
+
+    # 활동 대사량 계산 및 출력
+    tdee = bmr * activity_levels[activity]
+    st.write(f"총 일일 에너지 소모량(TDEE): {tdee:.2f} kcal/일")
+
+    # 목표 칼로리 계산 및 출력
+    if goal == '약간의 다이어트(주 0.25kg감량)':
+        recommended_calories = tdee * 0.89
+    elif goal == '보통의 다이어트(주 0.5kg감량)':
+        recommended_calories = tdee * 0.77
+    elif goal == '심한 다이어트(주 1kg감량)':
+        recommended_calories = tdee * 0.55
+    elif goal == '벌크업':
+        recommended_calories = tdee * 1.20
+    elif goal == '유지':
+        return
+    st.write(f"목표를 위한 권장 일일 에너지 소모량: {recommended_calories:.2f} kcal/일")
+
+    # 일일 필요 섭취 영양소 계산
+    st.write("일일 필요 섭취 영양소")
+    carbohydrate = recommended_calories * 0.5
+    protein = recommended_calories * 0.3
+    fat = recommended_calories * 0.2
+    st.write(f"탄수화물 :{carbohydrate:d} kcal / {carbohydrate/4:.2f}g")
+    st.write(f"단백질 :{protein:d} kcal / {protein/4:.2f}g")
+    st.write(f"지방 :{fat:d} kcal / {fat/9:.2f}g")
+
 
 ## 데이터 불러오기
 try:
@@ -204,17 +262,21 @@ except Exception as e:
 
 ## 사용자 데이터 제공 동의 및 데이터 입력 섹션
 st.subheader('개인 데이터 제공 동의')
-st.write('데이터 채집을 동의하시면 목표 체급까지의 식단 정보를 제공받을 수 있습니다.')
+st.write('데이터 채집을 동의하시면 목표 체급까지의 기초대사량 정보를 제공받을 수 있습니다.')
 st.write('다른 사용자들에게 더 큰 도움을 주기 위해서 데이터 채집을 동의해주세요.')
 st.write('채집된 데이터는 차후에 사용자 데이터을 통한 분석에 반영될 예정입니다.')
 
+# 스트림릿 세션 상태 초기화
+if 'submitted' not in st.session_state:
+    st.session_state['submit'] = False
+
 ## 본인의 데이터 채집 동의하기 버튼
 if st.button('본인의 데이터 채집 동의하기'):
-    consent = True
+    st.session_state['consent'] = True
 else:
-    consent = False
+    st.session_state['consent'] = False
 
-if consent:
+if st.session_state['consent']:
     with st.form("my_form"):
         st.subheader('성적 데이터 입력')
         # 사용자 데이터 입력 받기
@@ -250,6 +312,16 @@ if consent:
             updated_data.to_csv(data_path_2, index=False)
 
             st.success('데이터가 성공적으로 추가되었습니다!')
+
+            
+            st.session_state['submit'] = True
+
+
+## 사용자가 데이터를 제출했다면 BMR 계산기 출력
+if st.session_state['submit']:
+    bmr_calculator()
+
+
 
 # 기능 추가(식단 기능)
 # README 파일 작성
