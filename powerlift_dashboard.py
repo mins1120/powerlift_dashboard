@@ -318,7 +318,3 @@ with st.expander("개인 정보 수집 동의"):
 ## 사용자가 데이터를 제출했다면 BMR 계산기 출력
 if st.session_state["calculator_kick_start"]:
     bmr_calculator()
-
-
-# 기능 추가(식단 기능)
-# README 파일 작성
